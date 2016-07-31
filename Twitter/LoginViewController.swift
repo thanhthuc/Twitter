@@ -10,14 +10,23 @@ import UIKit
 import BDBOAuth1Manager
 
 
-
+@IBDesignable
 
 class LoginViewController: UIViewController {
-
+    
+    @IBOutlet weak var loginButton: LoginButton!
+   
+    @IBOutlet weak var iconTwitter: UIImageView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         // Do any additional setup after loading the view.
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
     }
 
     override func didReceiveMemoryWarning() {

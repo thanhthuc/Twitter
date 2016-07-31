@@ -13,7 +13,7 @@ let consumerKey = "VvYUAz3UiPX86JIWqwwGokfgL"
 let consumerSecretKey = "UlKylYQDIAi322PR9cpzV00iBLReOwRynRomyhoUHLRYxYPa21"
 let baseURL = "https://api.twitter.com/"
 let requestToken = "oauth/request_token"
-let accessToken = "oauth/access_token"
+let linkAccessToken = "oauth/access_token"
 let authorizeURL = "https://api.twitter.com/oauth/authorize?oauth_token"
 
 class TwitterClient: BDBOAuth1SessionManager {
@@ -23,8 +23,11 @@ class TwitterClient: BDBOAuth1SessionManager {
         let urlStringHomeTimeLineToGet = "1.1/statuses/home_timeline.json"
         GET(urlStringHomeTimeLineToGet, parameters: nil, progress: nil, success: { (task:NSURLSessionDataTask, respond:AnyObject?) in
             
-            let dictionaries = respond as! [NSDictionary]
-            let tweets = Tweet.tweetsWithArray(dictionaries)
+            let dictionaries = respond as? [NSDictionary]
+            var tweets: [Tweet] = []
+            if dictionaries?.count > 0 {
+                tweets = Tweet.tweetsWithArray(dictionaries!)
+            }
             
             success(tweets)
             
@@ -33,16 +36,16 @@ class TwitterClient: BDBOAuth1SessionManager {
         })
     }
     
-    func currentAccount() {
+    func currentAccount(success: (User) -> (), failure: (NSError) -> ()) {
+        
         let urlStringToGet = "1.1/account/verify_credentials.json"
         GET(urlStringToGet, parameters: nil, progress: nil, success: { (task:NSURLSessionDataTask, respond) in
             
             let userDictionary = respond as! NSDictionary
             
-            let user = User(dictionary: userDictionary)
+            let users = User(dictionary: userDictionary)
             
-            print("name: \(user.name)")
-            print("profile: \(user.profileURL)")
+            success(users)
             
             }, failure: { (task:NSURLSessionDataTask?, error: NSError) in
                 print(error.localizedDescription)
@@ -71,19 +74,32 @@ class TwitterClient: BDBOAuth1SessionManager {
         }
     }
     
+    func logout() {
+        User.currentUser = nil
+        deauthorize()
+        
+        NSNotificationCenter.defaultCenter().postNotificationName(User.userDidLogout, object: nil)
+    }
+    
     func handleOpenUrl(url: NSURL) {
         
         let requestToken = BDBOAuth1Credential(queryString: url.query)
         
-        fetchAccessTokenWithPath(accessToken, method: "POST", requestToken: requestToken, success: { (respond:BDBOAuth1Credential!) in
+        fetchAccessTokenWithPath(linkAccessToken, method: "POST", requestToken: requestToken, success: { (respond:BDBOAuth1Credential!) in
             
-            self.loginSuccess?()
-            
+            self.currentAccount({ (user) in
+                User.currentUser = user
+                
+                self.loginSuccess?()
+    
+                }, failure: { (error) in
+                    self.loginFailure?(error)
+            })
+
         }) { (error:NSError!) in
             
             self.loginFailure?(error)
         }
-
     }
     
 }
