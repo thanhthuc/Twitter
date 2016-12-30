@@ -17,16 +17,23 @@ class LoginViewController: UIViewController {
     @IBOutlet weak var loginButton: LoginButton!
    
     @IBOutlet weak var iconTwitter: UIImageView!
+    @IBOutlet weak var distanceToLogin: NSLayoutConstraint!
+    var distanceConstraint: CGFloat = 0
+    var originalDistanceConstraint: CGFloat = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         // Do any additional setup after loading the view.
+        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(onPanGesture))
+        iconTwitter.isUserInteractionEnabled = true
+        iconTwitter.addGestureRecognizer(panGesture)
+        originalDistanceConstraint = distanceToLogin.constant
     }
     
     override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
         
+        super.viewDidLayoutSubviews()
     }
 
     override func didReceiveMemoryWarning() {
@@ -35,19 +42,50 @@ class LoginViewController: UIViewController {
     }
     
 
-    @IBAction func onLogin(sender: UIButton) {
+    @IBAction func onLogin(_ sender: UIButton) {
         
-        let client = TwitterClient.shareInstance
         
-        client.login({ 
+    }
+    
+    func onPanGesture(_ sender: UIPanGestureRecognizer) {
+        let translateInView = sender.translation(in: view)
+
+        if sender.state == .began {
+            distanceConstraint = distanceToLogin.constant
             
-            self.performSegueWithIdentifier("loginSegue", sender: self)
-            print("i 've got login")
+        } else if sender.state == .changed {
+            distanceToLogin.constant = distanceConstraint - translateInView.y
+            view.layoutIfNeeded()
             
-        }) { (error:NSError) in
-            print(error.localizedDescription)
+        } else if sender.state == .ended {
+            
+            UIView.animate(withDuration: 0.4, delay: 0.2, usingSpringWithDamping: 0.1, initialSpringVelocity: 0.5, options: .beginFromCurrentState, animations: {
+                
+                if self.distanceToLogin.constant < 100 {
+                    self.distanceToLogin.constant = 0
+                    
+                } else {
+                    self.distanceToLogin.constant = self.originalDistanceConstraint
+                }
+                self.view.layoutIfNeeded()
+                
+            }, completion: { (finish) in
+                
+            })
         }
         
+        if distanceToLogin.constant == 0 {
+            let client = TwitterClient.shareInstance
+            
+            client?.login({
+                
+                self.performSegue(withIdentifier: "loginSegue", sender: self)
+                print("i 've got login")
+                
+            }) { (error:NSError) in
+                print(error.localizedDescription)
+            }
+        }
         
     }
     

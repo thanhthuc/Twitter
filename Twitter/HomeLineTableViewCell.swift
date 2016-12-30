@@ -25,15 +25,15 @@ class HomeLineTableViewCell: UITableViewCell {
             
             personTweetToMeLabel.text = tweet.userMention as? String
             let urlString = tweet.profileImageUrlUserTweet
-            avatarImage.setImageWithURL(urlString!)
+            avatarImage.setImageWith(urlString! as URL)
             
             nameLabel.text = tweet.nameUserTweet as? String
             nickNameLabel.text = "@" + (tweet.screenNameUserTweet as? String)!
             tweetLabel.text = tweet.text as? String
             
-            let dateFormat = NSDateFormatter()
+            let dateFormat = DateFormatter()
             dateFormat.dateFormat = "HH:mm"
-            let stringDate = dateFormat.stringFromDate(tweet.timestamp!)
+            let stringDate = dateFormat.string(from: tweet.timestamp! as Date)
             timeLabel.text = stringDate
             
         }
@@ -46,7 +46,7 @@ class HomeLineTableViewCell: UITableViewCell {
         self.avatarImage.layer.cornerRadius = self.avatarImage.bounds.size.height/2
     }
 
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state

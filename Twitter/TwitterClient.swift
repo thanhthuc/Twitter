@@ -8,20 +8,47 @@
 
 import UIKit
 import BDBOAuth1Manager
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l < r
+  case (nil, _?):
+    return true
+  default:
+    return false
+  }
+}
 
-let consumerKey = "VvYUAz3UiPX86JIWqwwGokfgL"
-let consumerSecretKey = "UlKylYQDIAi322PR9cpzV00iBLReOwRynRomyhoUHLRYxYPa21"
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l > r
+  default:
+    return rhs < lhs
+  }
+}
+
+
+let consumerKey = "uBw8qAHslm8HW6s7iJEvlvWfW"
+let consumerSecretKey = "OTHn4qEchvXgg8SlBYKjArYr2lkwIVaVxenJfbzdZ4uNIsSNPs"
 let baseURL = "https://api.twitter.com/"
 let requestToken = "oauth/request_token"
 let linkAccessToken = "oauth/access_token"
 let authorizeURL = "https://api.twitter.com/oauth/authorize?oauth_token"
 
 class TwitterClient: BDBOAuth1SessionManager {
-    static let shareInstance = TwitterClient(baseURL: NSURL(string: "https://api.twitter.com/"), consumerKey: consumerKey, consumerSecret: consumerSecretKey)
+    static let shareInstance = TwitterClient(baseURL: URL(string: "https://api.twitter.com/"), consumerKey: consumerKey, consumerSecret: consumerSecretKey)
     
-    func homeTimeLine(success: ([Tweet]) -> (), failure: (NSError) -> ()) {
+    //get string home time line
+    func homeTimeLine(_ success: @escaping ([Tweet]) -> (), failure: (NSError) -> ()) {
         let urlStringHomeTimeLineToGet = "1.1/statuses/home_timeline.json"
-        GET(urlStringHomeTimeLineToGet, parameters: nil, progress: nil, success: { (task:NSURLSessionDataTask, respond:AnyObject?) in
+        
+      
+        get(urlStringHomeTimeLineToGet, parameters: nil, progress: nil, success: { (task:URLSessionDataTask, respond:Any?) in
             
             let dictionaries = respond as? [NSDictionary]
             var tweets: [Tweet] = []
@@ -31,15 +58,18 @@ class TwitterClient: BDBOAuth1SessionManager {
             
             success(tweets)
             
-            }, failure: { (task:NSURLSessionDataTask?, error:NSError) in
-                
-        })
+        }) { (task:URLSessionDataTask?, error:Error) in
+            
+        }
+        
+        
     }
     
-    func currentAccount(success: (User) -> (), failure: (NSError) -> ()) {
+    func currentAccount(_ success: @escaping (User) -> (), failure: (NSError) -> ()) {
         
+        //get current user from twitter API
         let urlStringToGet = "1.1/account/verify_credentials.json"
-        GET(urlStringToGet, parameters: nil, progress: nil, success: { (task:NSURLSessionDataTask, respond) in
+        get(urlStringToGet, parameters: nil, progress: nil, success: { (task:URLSessionDataTask, respond: Any?) in
             
             let userDictionary = respond as! NSDictionary
             
@@ -47,45 +77,44 @@ class TwitterClient: BDBOAuth1SessionManager {
             
             success(users)
             
-            }, failure: { (task:NSURLSessionDataTask?, error: NSError) in
-                print(error.localizedDescription)
-        })
+        }) { (task:URLSessionDataTask?, error: Error) in
+            
+        }
     }
     
     var loginSuccess: (() -> ())?
     var loginFailure: ((NSError) -> ())?
-    
-    
-    func login(success: () -> (), failure: (NSError) -> ()) {
+    func login(_ success: @escaping () -> (), failure: @escaping (NSError) -> ()) {
         
         loginSuccess = success
         loginFailure = failure
         
-        TwitterClient.shareInstance.deauthorize()
+        TwitterClient.shareInstance?.deauthorize()
         
-        TwitterClient.shareInstance.fetchRequestTokenWithPath(requestToken, method: "POST", callbackURL: NSURL(string: "mytwitter://oauth"), scope: nil, success: { (respond: BDBOAuth1Credential!) in
+        TwitterClient.shareInstance?.fetchRequestToken(withPath: requestToken, method: "POST", callbackURL: URL(string: "mytwitter://oauth"), scope: nil, success: { (respond: BDBOAuth1Credential?) in
             
-            print("i got the request token: \(respond.token)")
+            //open browser to authorize, login
+            print("i got the request token: \(respond?.token)")
+            UIApplication.shared.openURL(URL(string:"\(authorizeURL)=\((respond?.token)!)")!)
             
-            UIApplication.sharedApplication().openURL(NSURL(string:"\(authorizeURL)=\(respond.token)")!)
             
-        }) { (error: NSError!) in
-            self.loginFailure!(error)
-        }
+        }, failure: { (error: Error?) in
+            self.loginFailure!(error as! NSError)
+        })
     }
     
     func logout() {
         User.currentUser = nil
         deauthorize()
         
-        NSNotificationCenter.defaultCenter().postNotificationName(User.userDidLogout, object: nil)
+        NotificationCenter.default.post(name: Notification.Name(rawValue: User.userDidLogout), object: nil)
     }
     
-    func handleOpenUrl(url: NSURL) {
+    func handleOpenUrl(_ url: URL) {
         
         let requestToken = BDBOAuth1Credential(queryString: url.query)
         
-        fetchAccessTokenWithPath(linkAccessToken, method: "POST", requestToken: requestToken, success: { (respond:BDBOAuth1Credential!) in
+        fetchAccessToken(withPath: linkAccessToken, method: "POST", requestToken: requestToken, success: { (respond:BDBOAuth1Credential?) in
             
             self.currentAccount({ (user) in
                 User.currentUser = user
@@ -96,9 +125,9 @@ class TwitterClient: BDBOAuth1SessionManager {
                     self.loginFailure?(error)
             })
 
-        }) { (error:NSError!) in
+        }) { (error:Error?) in
             
-            self.loginFailure?(error)
+            self.loginFailure?(error as! NSError)
         }
     }
     

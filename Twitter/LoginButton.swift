@@ -14,9 +14,9 @@ class LoginButton: UIButton {
     
     // Only override drawRect: if you perform custom drawing.
     // An empty implementation adversely affects performance during animation.
-    override func drawRect(rect: CGRect) {
+    override func draw(_ rect: CGRect) {
         // Drawing code
-        self.layer.cornerRadius = self.bounds.size.height/2
+        self.layer.cornerRadius = self.bounds.size.height/3
         self.layer.masksToBounds = true
         
     }

@@ -32,18 +32,18 @@ class TweetViewController: UITableViewController {
         // Do any additional setup after loading the view.
         if tweet != nil {
             let url = tweet?.profileImageUrlUserTweet
-            profileURL.setImageWithURL(url!)
+            profileURL.setImageWith(url! as URL)
             nameLabel.text = tweet?.nameUserTweet as? String
             nameScreenLabel.text = "@" + (tweet?.screenNameUserTweet as? String)!
             text.text = tweet?.text as? String
             
-            let dateFormat = NSDateFormatter()
+            let dateFormat = DateFormatter()
             dateFormat.dateFormat = "dd/MM/yyyy HH:mm:ss"
-            let stringDate = dateFormat.stringFromDate(tweet!.timestamp!)
+            let stringDate = dateFormat.string(from: tweet!.timestamp! as Date)
             dateLabel.text = stringDate
             
-            retweetCount.text = String(tweet?.retweetCount)
-            favouriteCount.text = String(tweet?.favouritesCount)
+            retweetCount.text = String(describing: tweet?.retweetCount)
+            favouriteCount.text = String(describing: tweet?.favouritesCount)
         }
     }
 
@@ -52,15 +52,15 @@ class TweetViewController: UITableViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    @IBAction func replyAction(sender: AnyObject) {
+    @IBAction func replyAction(_ sender: AnyObject) {
         
     }
 
-    @IBAction func reTweetAction(sender: AnyObject) {
+    @IBAction func reTweetAction(_ sender: AnyObject) {
         
     }
     
-    @IBAction func favouriteAction(sender: AnyObject) {
+    @IBAction func favouriteAction(_ sender: AnyObject) {
         
     }
     
