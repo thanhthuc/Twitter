@@ -75,6 +75,7 @@ class TwitterClient: BDBOAuth1SessionManager {
             
             let users = User(dictionary: userDictionary)
             
+            print("6. Run if get success user from API verify_credentials.json")
             success(users)
             
         }) { (task:URLSessionDataTask?, error: Error) in
@@ -86,6 +87,13 @@ class TwitterClient: BDBOAuth1SessionManager {
     var loginFailure: ((NSError) -> ())?
     func login(_ success: @escaping () -> (), failure: @escaping (NSError) -> ()) {
         
+        //2
+        print("2. Run parameter in function body normal")
+        loginFailure = {(error) in
+            print(error)
+        }
+        
+        
         loginSuccess = success
         loginFailure = failure
         
@@ -94,7 +102,8 @@ class TwitterClient: BDBOAuth1SessionManager {
         TwitterClient.shareInstance?.fetchRequestToken(withPath: requestToken, method: "POST", callbackURL: URL(string: "mytwitter://oauth"), scope: nil, success: { (respond: BDBOAuth1Credential?) in
             
             //open browser to authorize, login
-            print("i got the request token: \(respond?.token)")
+            //3
+            print("3. Run while run API in block in function, got the request token success ")
             UIApplication.shared.openURL(URL(string:"\(authorizeURL)=\((respond?.token)!)")!)
             
             
@@ -116,9 +125,11 @@ class TwitterClient: BDBOAuth1SessionManager {
         
         fetchAccessToken(withPath: linkAccessToken, method: "POST", requestToken: requestToken, success: { (respond:BDBOAuth1Credential?) in
             
+            print("5. run when request success accessToken")
             self.currentAccount({ (user) in
                 User.currentUser = user
                 
+                print("7. Run block loginSuccess")
                 self.loginSuccess?()
     
                 }, failure: { (error) in

@@ -59,9 +59,9 @@ class LoginViewController: UIViewController {
             
         } else if sender.state == .ended {
             
-            UIView.animate(withDuration: 0.4, delay: 0.2, usingSpringWithDamping: 0.1, initialSpringVelocity: 0.5, options: .beginFromCurrentState, animations: {
+            UIView.animate(withDuration: 0.6, delay: 0.2, usingSpringWithDamping: 0.2, initialSpringVelocity: 0.8, options: .beginFromCurrentState, animations: {
                 
-                if self.distanceToLogin.constant < 100 {
+                if self.distanceToLogin.constant < 20 {
                     self.distanceToLogin.constant = 0
                     
                 } else {
@@ -77,10 +77,12 @@ class LoginViewController: UIViewController {
         if distanceToLogin.constant == 0 {
             let client = TwitterClient.shareInstance
             
+            //1
+            print("1. Start with login button")
             client?.login({
                 
+                print("8. Yes, i 've got login")
                 self.performSegue(withIdentifier: "loginSegue", sender: self)
-                print("i 've got login")
                 
             }) { (error:NSError) in
                 print(error.localizedDescription)
