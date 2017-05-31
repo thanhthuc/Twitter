@@ -108,7 +108,7 @@ class TwitterClient: BDBOAuth1SessionManager {
             
             
         }, failure: { (error: Error?) in
-            self.loginFailure!(error as! NSError)
+            self.loginFailure!(error! as NSError)
         })
     }
     
@@ -138,7 +138,7 @@ class TwitterClient: BDBOAuth1SessionManager {
 
         }) { (error:Error?) in
             
-            self.loginFailure?(error as! NSError)
+            self.loginFailure?(error! as NSError)
         }
     }
     

@@ -11,15 +11,8 @@ import UIKit
 @IBDesignable
 class LoginButton: UIButton {
 
-    
-    // Only override drawRect: if you perform custom drawing.
-    // An empty implementation adversely affects performance during animation.
-    override func draw(_ rect: CGRect) {
-        // Drawing code
+    override func awakeFromNib() {
         self.layer.cornerRadius = self.bounds.size.height/3
         self.layer.masksToBounds = true
-        
     }
-    
-
 }
